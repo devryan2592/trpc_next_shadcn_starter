@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
-import { Button } from "@repo/ui/button";
+import { Button } from "@repo/ui/components/ui/button";
 
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3001";
 
@@ -46,6 +46,7 @@ export default function Web() {
           id="name"
           value={name}
           onChange={onChange}
+          className="border border-gray-300 rounded-md p-2 bg-slate-200"
         ></input>
         <Button type="submit">Submit</Button>
       </form>
