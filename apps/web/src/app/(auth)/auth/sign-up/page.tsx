@@ -86,8 +86,11 @@ const RegisterPage: NextPage<RegisterPageProps> = ({}) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onErrors)}>
-        <Card className="mx-auto max-w-sm">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, onErrors)}
+        className="mx-auto w-full max-w-sm"
+      >
+        <Card className="w-full">
           <CardHeader>
             <CardTitle className="text-xl">Sign Up</CardTitle>
             <CardDescription>
@@ -155,7 +158,7 @@ const RegisterPage: NextPage<RegisterPageProps> = ({}) => {
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="#" className="underline">
+              <Link href="/auth/sign-in" className="underline">
                 Sign in
               </Link>
             </div>
