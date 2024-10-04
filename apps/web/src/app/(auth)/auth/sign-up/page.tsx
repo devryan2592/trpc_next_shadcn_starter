@@ -11,17 +11,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/components/base/card";
-import { Input } from "@repo/ui/components/base/input";
-import { Label } from "@repo/ui/components/base/label";
 import FormInputField from "@repo/ui/components/FormInputField";
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@repo/ui/components/base/form";
 import { FieldErrors } from "react-hook-form";
-import PasswordInputField from "@repo/ui/components/PasswordInputField";
+import { trpc } from "@/trpc/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface RegisterPageProps {
   // Add your page props here
@@ -61,6 +59,8 @@ const registerFormSchema = z
   });
 
 const RegisterPage: NextPage<RegisterPageProps> = ({}) => {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     mode: "onBlur",
@@ -74,8 +74,26 @@ const RegisterPage: NextPage<RegisterPageProps> = ({}) => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof registerFormSchema>) => {
-    console.log(data);
+  const { mutate, error } = trpc.auth.register.useMutation({
+    onSuccess: () => {
+      toast.success("Account created successfully", {
+        description: "Please check your email for a verification link",
+        action: (
+          <Button onClick={() => router.push("/auth/sign-in")}>Sign in</Button>
+        ),
+      });
+    },
+    onError: () => {
+      toast.error("Failed to create account");
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof registerFormSchema>) => {
+    const { firstName, lastName, ...rest } = data;
+
+    const name = `${firstName} ${lastName}`;
+
+    await mutate({ name, ...rest });
   };
 
   const onErrors = (

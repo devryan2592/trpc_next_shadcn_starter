@@ -16,7 +16,7 @@ datasource db {
 model User {
   uid           String         @id
   createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  updatedAt     DateTime       @default(now()) @updatedAt
   name          String?
   image         String?
   refreshTokens RefreshToken[]

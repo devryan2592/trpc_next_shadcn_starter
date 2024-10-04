@@ -6,5 +6,5 @@
     "rootDir": "./src"
   },
   "exclude": ["node_modules"],
-  "include": ["src", "@repo/trpc-server/middlewares", "@repo/trpc-server/config/auth.config.ts"]
+  "include": ["src", "@repo/trpc-server/middlewares", "@repo/trpc-server/config/auth.config.ts", "@repo/trpc-server/services/token.service.ts"]
 }

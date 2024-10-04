@@ -1,6 +1,7 @@
 import "@repo/ui/globals.css";
 import { ThemeProvider } from "@repo/ui/providers/ThemeProvider";
 import { TRPCProvider } from "../trpc/client";
+import { Toaster } from "@repo/ui/components/base/sonner";
 
 export default function RootLayout({
   children,
@@ -20,6 +21,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
+              <Toaster richColors closeButton />
             </ThemeProvider>
           </TRPCProvider>
         </body>

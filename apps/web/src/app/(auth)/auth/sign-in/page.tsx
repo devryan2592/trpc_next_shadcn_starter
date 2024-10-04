@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldErrors } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@repo/ui/components/base/button";
 import {
@@ -17,6 +19,7 @@ import {
 } from "@repo/ui/components/base/card";
 import { Form } from "@repo/ui/components/base/form";
 import FormInputField from "@repo/ui/components/FormInputField";
+import { trpc } from "@/trpc/client";
 
 interface SignInPageProps {
   // Add your page props here
@@ -28,6 +31,7 @@ const signInFormSchema = z.object({
 });
 
 const SignInPage: NextPage<SignInPageProps> = ({}) => {
+  const router = useRouter();
   const form = useForm<z.infer<typeof signInFormSchema>>({
     resolver: zodResolver(signInFormSchema),
     mode: "onBlur",
@@ -38,8 +42,19 @@ const SignInPage: NextPage<SignInPageProps> = ({}) => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof signInFormSchema>) => {
-    console.log(data);
+  const { mutate } = trpc.auth.login.useMutation({
+    onSuccess: (data) => {
+      toast.success("Signed in successfully");
+      //   router.push("/dashboard"); // Redirect to dashboard or appropriate page
+      console.log(data);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof signInFormSchema>) => {
+    await mutate(data);
   };
 
   const onErrors = (errors: FieldErrors<z.infer<typeof signInFormSchema>>) => {
