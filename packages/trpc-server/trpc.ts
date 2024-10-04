@@ -23,6 +23,8 @@ export const createContext = ({
     accessToken = req.cookies.accessToken;
   }
 
+  console.log(req.cookies);
+
   return { req, res, accessToken };
 };
 
@@ -53,6 +55,8 @@ const isAuthMiddleware = t.middleware(async (opts) => {
 
     uid = decoded.uid;
   } catch (error) {
+    console.log(error);
+
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Invalid access token",

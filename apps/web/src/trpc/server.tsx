@@ -1,3 +1,4 @@
+import { getAccessToken } from "@/actions/auth.actions";
 import { AppRouter } from "@repo/trpc-server/routers";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
@@ -10,6 +11,9 @@ export const trpcServer = createTRPCClient<AppRouter>({
       fetch: async (url, options) => {
         return fetch(url, {
           ...options,
+          headers: {
+            Cookie: `accessToken=${await getAccessToken()}`,
+          },
           credentials: "include",
         });
       },
