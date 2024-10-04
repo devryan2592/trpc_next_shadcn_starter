@@ -2,7 +2,6 @@
   "name": "@repo/trpc-server",
   "version": "1.0.0",
   "private": true,
-
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +16,9 @@
     "@repo/typescript-config": "*",
     "@trpc/server": "^11.0.0-rc.544",
     "bcryptjs": "^2.4.3",
+    "devalue": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
+    "superjson": "^2.2.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

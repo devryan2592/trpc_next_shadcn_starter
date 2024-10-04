@@ -35,3 +35,14 @@ export const verifyJWT = (
     algorithms: ["HS256"],
   }) as JwtPayloadExtended;
 };
+
+export const getTokenExpiryDate = async (token: string): Promise<Date> => {
+  const decoded = await verifyJWT(token, "REFRESH_JWT_SECRET");
+  if (!decoded.exp) {
+    throw new Error("Token does not have an expiration date");
+  }
+
+  const date = new Date(decoded.exp * 1000);
+  console.log(date);
+  return date;
+};

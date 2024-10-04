@@ -1,13 +1,16 @@
 import { LoginSchema, RegisterSchema } from "../schema/auth.schema";
 import { publicProcedure, router } from "../trpc";
-import { prisma } from "@repo/db";
 import { TRPCError } from "@trpc/server";
-import * as bcrypt from "bcryptjs";
-import { v4 as uuidv4 } from "uuid";
-import { AuthProviderType } from "@repo/db/types";
-import { createUser, findUserByEmail } from "../services/user.service";
+import { AuthProviderType, RefreshToken } from "@repo/db/types";
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+  updateRefreshToken,
+} from "../services/user.service";
 import { comparePassword, passwordHash } from "../services/auth.service";
 import { generateTokens } from "../services/token.service";
+import { getTokenExpiryDate } from "../utils/jwt";
 
 export const authRoutes = router({
   register: publicProcedure
@@ -44,31 +47,88 @@ export const authRoutes = router({
     }),
 
   login: publicProcedure.input(LoginSchema).mutation(async ({ input, ctx }) => {
-    const { email, password } = input;
+    try {
+      const refreshTokenFromCookies: string = ctx.req.cookies.refreshToken;
 
-    const user = await findUserByEmail(email);
+      console.log("Refresh Token from Cookies:", refreshTokenFromCookies);
 
-    if (!user) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "User not found",
+      const { email, password } = input;
+
+      const user = await findUserByEmail(email);
+
+      if (!user) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+
+      const passwordMatch = await comparePassword(password, user.passwordHash);
+
+      if (!passwordMatch) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid password",
+        });
+      }
+
+      const { accessToken, refreshToken } = await generateTokens(user.user.uid);
+
+      const userById = await findUserById(user.user.uid);
+
+      if (!userById) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+
+      const updateRefreshTokens = async (userId: string, newToken: string) => {
+        const currentTime = new Date();
+        const newTokenExpiry = await getTokenExpiryDate(newToken);
+
+        const updatedTokens = [
+          ...userById.refreshTokens.filter(
+            (token) =>
+              token.token !== refreshTokenFromCookies &&
+              token.expiresAt > currentTime
+          ),
+          {
+            uid: userId,
+            token: newToken,
+            createdAt: new Date(),
+            expiresAt: newTokenExpiry,
+          },
+        ].slice(-10);
+
+        console.log("Updated Tokens:", updatedTokens);
+
+        await updateRefreshToken(user.user.uid, updatedTokens);
+
+        return updatedTokens;
+      };
+
+      await updateRefreshTokens(user.user.uid, refreshToken);
+
+      ctx.res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
       });
-    }
 
-    const passwordMatch = await comparePassword(password, user.passwordHash);
-
-    if (!passwordMatch) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Invalid password",
+      ctx.res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 1000 * 60 * 60 * 24 * 15, // 15 days
       });
+
+      return {
+        message: "User signed in successfully",
+        data: { accessToken, refreshToken },
+      };
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
-
-    const { accessToken, refreshToken } = await generateTokens(user.user.uid);
-
-    return {
-      message: "User signed in successfully",
-      data: { accessToken, refreshToken },
-    };
   }),
 });

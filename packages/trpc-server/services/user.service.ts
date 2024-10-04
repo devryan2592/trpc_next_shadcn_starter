@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { AuthProviderType, User } from "@repo/db/types";
+import { AuthProviderType, RefreshToken, User } from "@repo/db/types";
 import { v4 as uuidv4 } from "uuid";
 
 interface CreateUserInput {
@@ -32,6 +32,9 @@ export const findUserById = async (id: string) => {
     where: {
       uid: id,
     },
+    include: {
+      refreshTokens: true,
+    },
   });
 
   return user;
@@ -50,4 +53,23 @@ export const createUser = async (userDetails: CreateUserInput) => {
   });
 
   return user;
+};
+
+export const updateRefreshToken = async (
+  uid: string,
+  updatedRefreshTokenArray: Omit<RefreshToken, "id" | "userId">[]
+) => {
+  await prisma.user.update({
+    where: { uid },
+    data: {
+      refreshTokens: {
+        deleteMany: {},
+        create: updatedRefreshTokenArray.map((token) => ({
+          token: token.token,
+          createdAt: token.createdAt,
+          expiresAt: token.expiresAt,
+        })),
+      },
+    },
+  });
 };

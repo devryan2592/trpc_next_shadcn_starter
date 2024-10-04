@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  uid           String         @id
+  uid           String         @id @default(uuid())
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @default(now()) @updatedAt
   name          String?
@@ -39,10 +39,12 @@ model Manager {
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
-  userId    String
-  user      User     @relation(fields: [userId], references: [uid])
   createdAt DateTime @default(now())
   expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [uid])
+  userId    String
+
+  @@index([userId])
 }
 
 model Credentials {
