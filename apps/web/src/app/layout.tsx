@@ -1,4 +1,6 @@
 import "@repo/ui/globals.css";
+import { ThemeProvider } from "@repo/ui/providers/ThemeProvider";
+import { TRPCProvider } from "../trpc/client";
 
 export default function RootLayout({
   children,
@@ -6,8 +8,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
+    <>
+      <html lang="en" suppressHydrationWarning>
+        <head />
+        <body>
+          <TRPCProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </TRPCProvider>
+        </body>
+      </html>
+    </>
   );
 }

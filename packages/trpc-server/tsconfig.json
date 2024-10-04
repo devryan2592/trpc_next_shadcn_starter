@@ -1,0 +1,14 @@
+{
+  "extends": "@repo/typescript-config/base",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+
+    /* Advanced */
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+}
